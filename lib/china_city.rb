@@ -15,9 +15,11 @@ module ChinaCity
       return result if parent_id.blank?
       province_id = province(parent_id)
       city_id = city(parent_id)
+      district_id = district(parent_id)
       children = data
       children = children[province_id][:children] if children.has_key?(province_id)
       children = children[city_id][:children] if children.has_key?(city_id)
+      children = children[district_id][:children] if children.has_key?(district_id)
       children.each_key do |id|
         result.push [ children[id][:text], id]
       end
@@ -44,6 +46,9 @@ module ChinaCity
 
     def province(code)
       match(code)[1].ljust(6, '0')
+    rescue => e
+      p e.to_s, 'code', code
+      raise e.to_s
     end
 
     def city(code)
@@ -51,7 +56,20 @@ module ChinaCity
       "#{id_match[1]}#{id_match[2]}".ljust(6, '0')
     end
 
+    def district(code)
+      code[0..5].rjust(6,'0')
+    end
+
+    def get_id(type=:state, code)
+      ret = origin_data[type.to_s].select{|i| i['text'] == code}
+    end
+
     private
+
+    def origin_data
+      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/sfexpress_areas.json"))
+    end
+
     def data
       unless @list
         #{ '440000' =>
@@ -72,23 +90,35 @@ module ChinaCity
         # }
         @list = {}
         #@see: http://github.com/RobinQu/LocationSelect-Plugin/raw/master/areas_1.0.json
-        json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
-        districts = json.values.flatten
-        districts.each do |district|
-          id = district['id']
-          text = district['text']
+        json = origin_data
+        # json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
+
+        streets = json.values.flatten
+        p streets.size
+        streets.each do |street|
+          id = street['id']
+          text = street['text']
+          next if id.nil? || id.size < 6
           if id.end_with?('0000')
             @list[id] =  {:text => text, :children => {}}
           elsif id.end_with?('00')
             province_id = province(id)
             @list[province_id] = {:text => nil, :children => {}} unless @list.has_key?(province_id)
             @list[province_id][:children][id] = {:text => text, :children => {}}
-          else
+          elsif id.size == 6
             province_id = province(id)
             city_id = city(id)
             @list[province_id] = {:text => text, :children => {}} unless @list.has_key?(province_id)
             @list[province_id][:children][city_id] = {:text => text, :children => {}} unless @list[province_id][:children].has_key?(city_id)
-            @list[province_id][:children][city_id][:children][id] = {:text => text}
+            @list[province_id][:children][city_id][:children][id] = {:text => text, :children => {}}
+          else
+            province_id = province(id)
+            city_id = city(id)
+            district_id = district(id)
+            @list[province_id] = {:text => text, :children => {}} unless @list.has_key?(province_id)
+            @list[province_id][:children][city_id] = {:text => text, :children => {}} unless @list[province_id][:children].has_key?(city_id)
+            @list[province_id][:children][city_id][:children][district_id] = {:text => text, :children => {}} unless @list[province_id][:children][city_id][:children].has_key?(district_id)
+            @list[province_id][:children][city_id][:children][district_id][:children][id] = {:text => text}
           end
         end
       end
