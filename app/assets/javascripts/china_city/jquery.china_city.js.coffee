@@ -17,11 +17,13 @@
       state: '.state'
       city: '.city'
       district: '.district'
+      street: '.street'
     , options
     
     this.each (index, china_city) ->
       bind_data $(china_city), options.state, options.city
       bind_data $(china_city), options.city, options.district
+      bind_data $(china_city), options.district, options.street
 )(jQuery)
 
 $ ->
