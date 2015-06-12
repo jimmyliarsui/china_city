@@ -67,7 +67,7 @@ module ChinaCity
     private
 
     def origin_data
-      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/sfexpress_areas.json"))
+      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/china_city_areas_2015.06.12.json"))
     end
 
     def data
