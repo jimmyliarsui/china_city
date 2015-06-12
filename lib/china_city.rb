@@ -101,7 +101,7 @@ module ChinaCity
           next if id.nil? || id.size < 6
           if id.end_with?('0000')
             @list[id] =  {:text => text, :children => {}}
-          elsif id.end_with?('00')
+          elsif id.end_with?('00') && id.size == 6
             province_id = province(id)
             @list[province_id] = {:text => nil, :children => {}} unless @list.has_key?(province_id)
             @list[province_id][:children][id] = {:text => text, :children => {}}
