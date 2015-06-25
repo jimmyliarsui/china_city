@@ -9,7 +9,7 @@ module ChinaCity
     def html_options(parent_id = '000000')
       list(parent_id).map{|item| [item[0], item[0], {'data-value' => item[1] }] }
     end
-    
+
     def list(parent_id = '000000')
       result = []
       return result if parent_id.blank?
@@ -94,7 +94,6 @@ module ChinaCity
         # json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
 
         streets = json.values.flatten
-        p streets.size
         streets.each do |street|
           id = street['id']
           text = street['text']
