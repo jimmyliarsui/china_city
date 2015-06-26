@@ -3,9 +3,9 @@
   city = '440300'
   district = '440305'
   provinces  = ChinaCity.html_options
-  cities     = ChinaCity.html_options(province)
-  districtes = ChinaCity.html_options(city)
-  
+  cities     = ChinaCity.html_options(province, postal_code: true)
+  districtes = ChinaCity.html_options(city, postal_code: true)
+
   province = ChinaCity.get('440000')
   city = ChinaCity.get('440300')
   district = ChinaCity.get('440305')

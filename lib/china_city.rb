@@ -4,25 +4,30 @@ require "china_city/engine"
 module ChinaCity
   CHINA = '000000' # 全国
   PATTERN = /(\d{2})(\d{2})(\d{2})/
+  POSTAL_CODES = JSON.parse(File.read(Engine.root.join('db/postal_codes.json'))).freeze
 
   class << self
-    def html_options(parent_id = '000000')
-      list(parent_id).map{|item| [item[0], item[0], {'data-value' => item[1] }] }
+    def html_options(parent_id = '000000', postal_code: false)
+      list(parent_id, postal_code: postal_code).map { |item| [item[0], item[0], (postal_code ? { 'data-value' => item[1], 'data-postal_code' => item[2] } : { 'data-value' => item[1] })] }
     end
-    
-    def list(parent_id = '000000')
-      result = []
-      return result if parent_id.blank?
+
+    def list(parent_id = '000000', postal_code: false)
+      return [] if parent_id.blank?
+
       province_id = province(parent_id)
       city_id = city(parent_id)
       district_id = district(parent_id)
+
       children = data
       children = children[province_id][:children] if children.has_key?(province_id)
       children = children[city_id][:children] if children.has_key?(city_id)
       children = children[district_id][:children] if children.has_key?(district_id)
-      children.each_key do |id|
-        result.push [ children[id][:text], id]
-      end
+
+      result = if postal_code
+                 children.map { |id, hash| [hash[:text], id, POSTAL_CODES[id].to_s] }
+               else
+                 children.map { |id, hash| [hash[:text], id] }
+               end
 
       #sort
       result.sort! {|a, b| a[1] <=> b[1]}
@@ -94,7 +99,6 @@ module ChinaCity
         # json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
 
         streets = json.values.flatten
-        p streets.size
         streets.each do |street|
           id = street['id']
           text = street['text']
