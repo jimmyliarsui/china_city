@@ -5,6 +5,7 @@ module ChinaCity
   CHINA = '000000' # 全国
   PATTERN = /(\d{2})(\d{2})(\d{2})/
   POSTAL_CODES = JSON.parse(File.read(Engine.root.join('db/postal_codes.json'))).freeze
+  SF_CASH_LIST = JSON.parse(File.read(Engine.root.join('db/sfexpress_cash_on_delivery_list.json'))).freeze
 
   class << self
     def html_options(parent_id = '000000', postal_code: false)
@@ -67,6 +68,13 @@ module ChinaCity
 
     def get_id(type=:state, code)
       ret = origin_data[type.to_s].select{|i| i['text'] == code}
+    end
+
+    # 指定的地址是否支持顺丰到付服务
+    # 参数： state+city, district
+    def cash_available?(state_city, district)
+      districts = SF_CASH_LIST[state_city]
+      districts && district.present? && districts.index(district) ? true : false
     end
 
     private

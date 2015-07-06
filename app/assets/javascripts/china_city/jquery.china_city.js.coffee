@@ -25,6 +25,7 @@
       bind_data $(china_city), options.city, options.district
       bind_data $(china_city), options.district, options.street
 
-  $(document).on 'ready page:load', ->
+  # $(document).on 'ready page:load', ->
+  $ ->
     $('.china-city').china_city()
 )(jQuery)
