@@ -80,7 +80,8 @@ module ChinaCity
     private
 
     def origin_data
-      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/china_city_areas_2015.08.25.json"))
+      # 2015.12.04 更新了最新的国标省市区数据 加上 淘宝的街道数据
+      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/china_city_areas_2015.12.04.json"))
     end
 
     def data
