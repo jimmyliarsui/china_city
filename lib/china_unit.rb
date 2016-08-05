@@ -41,13 +41,15 @@ class ChinaUnit
 
   DATA = JSON.parse(File.read("db/areas.json"))
   LEVELS = DATA.keys
-  CACHE = Redis.new(db: 14)
+  CACHE = Redis.new(db: 10)
 
-  attr_accessor :id, :text
+  attr_accessor :id, :text, :postcode
 
   def initialize(id)
     self.id = id
     self.text = self.parents.last['text']
+    postcode = self.parents.last['postcode']
+    self.postcode = postcode
   end
 
   # 获取民政局数据
@@ -146,9 +148,9 @@ class ChinaUnit
       if parents.empty?
         raise ChinaUnitNotFoundError.new(name, level, parents, names, nil, nil)
       else
-        selected, options = get_selected_and_options_from_STDIN(names, result, data)
-        target = selected ? options[selected.to_i] : nil
-        #target = ChinaUnit.find_by_name(name, level, parents[0..-2], names)
+        #selected, options = get_selected_and_options_from_STDIN(names, result, data)
+        #target = selected ? options[selected.to_i] : nil
+        target = ChinaUnit.find_by_name(name, level, parents[0..-2], names)
         raise ChinaUnitNotFoundError.new(name, level, parents, names, nil, nil) unless target
       end
     end
