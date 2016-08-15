@@ -41,3 +41,21 @@ task :generate_postal_codes do
     f.write JSON.pretty_generate(result)
   end
 end
+
+task :generate_sf_support do
+
+  result = ChinaUnit.each(3).inject({}) do |r, street|
+    street_unit = ChinaUnit.new(street['id'])
+    f = street_unit.full_name
+    if street['support_sf'] == true
+      r[f] = true
+      p f
+    end
+    r
+  end
+
+  File.open('db/sf_support.json', 'w') do |f|
+    f.write JSON.pretty_generate(result)
+  end
+
+end

@@ -7,6 +7,8 @@ module ChinaCity
   POSTAL_CODES = JSON.parse(File.read(Engine.root.join('db/postal_codes.json'))).freeze
   SF_CASH_LIST = JSON.parse(File.read(Engine.root.join('db/sfexpress_cash_on_delivery_list.json'))).freeze
 
+  SF_SUPPORT_LIST = JSON.parse(File.read(Engine.root.join('db/sf_support.json'))).freeze
+
   class << self
     def html_options(parent_id = '000000', postal_code: false)
       list(parent_id, postal_code: postal_code).map { |item| [item[0], item[0], (postal_code ? { 'data-value' => item[1], 'data-postal_code' => item[2] } : { 'data-value' => item[1] })] }
@@ -72,14 +74,14 @@ module ChinaCity
 
     # 指定的地址是否支持顺丰到付服务
     # 参数： state+city, district
-    def cash_available?(state_city, district)
-      districts = SF_CASH_LIST[state_city]
-      districts && district.present? && districts.index(district) ? true : false
-    end
-
-    def sf_cash_available?(id)
-      street = origin_data["streets"].find{|st| st["id"] == id}
-      street && street["support_sf"]
+    def cash_available?(state_city, district, street = nil)
+      if street.nil?
+        districts = SF_CASH_LIST[state_city]
+        districts && district.present? && districts.index(district) ? true : false
+      else 
+        full_name = "#{state_city}#{district}#{street}"
+        SF_SUPPORT_LIST[full_name] || false
+      end
     end
 
     private

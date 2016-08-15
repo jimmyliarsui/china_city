@@ -29,3 +29,4 @@ RSpec::Core::RakeTask.new(:spec)
 task :default => :spec
 
 Dir.glob('lib/tasks/*.rake').each { |r| import r }
+Dir.glob('lib/china_unit.rb').each { |r| import r }
