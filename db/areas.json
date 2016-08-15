@@ -123,6 +123,21 @@
     {
       "id": "430000",
       "text": "湖南省"
+    },
+    {
+      "id": "710000",
+      "text": "台湾省",
+      "sensitive_areas": true
+    },
+    {
+      "id": "810000",
+      "text": "香港特别行政区",
+      "sensitive_areas": true
+    },
+    {
+      "id": "820000",
+      "text": "澳门特别行政区",
+      "sensitive_areas": true
     }
   ],
   "cities": [

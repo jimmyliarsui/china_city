@@ -87,13 +87,14 @@ module ChinaCity
         #   }
         # }
         @list = {}
-        #@see: https://github.com/cn/GB2260
         json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
         streets = json.values.flatten
         streets.each do |street|
           id = street['id']
           text = street['text']
           sensitive_areas = street['sensitive_areas'] || false
+          support_sf = street['support_sf'] || false
+          postcode = street['postcode'] || nil
           if id.size == 6    # 省市区
             if id.end_with?('0000')                           # 省
               @list[id] =  {:text => text, :sensitive_areas => sensitive_areas, :children => {}}
@@ -101,12 +102,14 @@ module ChinaCity
               province_id = province(id)
               @list[province_id] = {:text => nil, :children => {}} unless @list.has_key?(province_id)
               @list[province_id][:children][id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}}
+              @list[province_id][:children][id][:postcode] = postcode if postcode
             else
               province_id = province(id)
               city_id     = city(id)
               @list[province_id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}} unless @list.has_key?(province_id)
               @list[province_id][:children][city_id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}} unless @list[province_id][:children].has_key?(city_id)
               @list[province_id][:children][city_id][:children][id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}}
+              @list[province_id][:children][city_id][:children][id][:postcode] = postcode if postcode
             end
           else               # 街道
             province_id = province(id)
@@ -115,7 +118,8 @@ module ChinaCity
             @list[province_id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}} unless @list.has_key?(province_id)
             @list[province_id][:children][city_id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}} unless @list[province_id][:children].has_key?(city_id)
             @list[province_id][:children][city_id][:children][district_id] = {:text => text, :sensitive_areas => sensitive_areas, :children => {}} unless @list[province_id][:children][city_id][:children].has_key?(district_id)
-            @list[province_id][:children][city_id][:children][district_id][:children][id] = {:text => text, :sensitive_areas => sensitive_areas}
+            @list[province_id][:children][city_id][:children][district_id][:children][id] = {:text => text, :sensitive_areas => sensitive_areas, :support_sf => support_sf}
+            @list[province_id][:children][city_id][:children][district_id][:children][id][:postcode] = postcode if postcode
           end
         end
       end
