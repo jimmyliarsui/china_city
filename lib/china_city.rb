@@ -77,11 +77,16 @@ module ChinaCity
       districts && district.present? && districts.index(district) ? true : false
     end
 
+    def sf_cash_available?(id)
+      street = origin_data["streets"].find{|st| st["id"] == id}
+      street && street["support_sf"]
+    end
+
     private
 
     def origin_data
       # 2015.12.04 更新了最新的国标省市区数据 加上 淘宝的街道数据
-      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/china_city_areas_2015.12.04.json"))
+      @origin_data ||= JSON.parse(File.read("#{Engine.root}/db/china_city_areas_2016.08.15.json"))
     end
 
     def data
