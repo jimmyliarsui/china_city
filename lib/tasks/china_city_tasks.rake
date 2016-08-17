@@ -3,7 +3,6 @@
 #   # Task goes here
 # end
 require 'json'
-require 'pry'
 require 'httparty'
 require 'nokogiri'
 
@@ -56,6 +55,40 @@ task :generate_sf_support do
 
   File.open('db/sf_support.json', 'w') do |f|
     f.write JSON.pretty_generate(result)
+  end
+
+end
+
+task :fix_id do
+
+  data = JSON.parse(File.read("db/china_city_areas_2016.08.15.json"))
+  data['cities']
+  .select{|i| !i['id'].end_with?('00')}
+  .group_by{|i| i['id'][0..1]}
+  .each do |group, values|
+    values.each_with_index do |i, index|
+      old_id = i['id']
+      new_id = old_id[0..1] + (90-index-1).to_s + "00"
+
+      puts "修改 #{i['text']} #{old_id} => #{new_id}"
+      i['id'] = new_id
+
+      district = data['districts'].find{|d| d['id'] == old_id}
+      new_district_id = new_id[0..3] + old_id[-2..-1]
+      puts "修改 #{district['text']} #{old_id} => #{new_district_id}"
+      district['id'] = new_district_id
+
+      streets = data['streets'].select{|s| s['id'].start_with?(old_id)}
+      streets.each do |s|
+        puts "修改 #{s['text']} #{s['id']} => #{s['id'].gsub(old_id, new_district_id)}"
+        s['id'] = s['id'].gsub(old_id, new_district_id)
+      end
+
+    end
+  end
+
+  File.open('db/china_city_areas_2016.08.15.json', 'w') do |f|
+    f.write JSON.pretty_generate(data)
   end
 
 end

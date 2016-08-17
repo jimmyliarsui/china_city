@@ -113,33 +113,65 @@ module ChinaCity
         #@see: http://github.com/RobinQu/LocationSelect-Plugin/raw/master/areas_1.0.json
         json = origin_data
         # json = JSON.parse(File.read("#{Engine.root}/db/areas.json"))
+        
+        json['provinces'].each do |item|
+          id = item['id']
+          text = item['text']
+          @list[id] = {:text => text, :children => {}}
+        end
 
-        streets = json.values.flatten
-        streets.each do |street|
-          id = street['id']
-          text = street['text']
-          next if id.nil? || id.size < 6
-          if id.end_with?('0000')
-            @list[id] =  {:text => text, :children => {}}
-          elsif id.end_with?('00') && id.size == 6
-            province_id = province(id)
-            @list[province_id] = {:text => nil, :children => {}} unless @list.has_key?(province_id)
-            @list[province_id][:children][id] = {:text => text, :children => {}}
-          elsif id.size == 6
-            province_id = province(id)
-            city_id = city(id)
-            @list[province_id] = {:text => text, :children => {}} unless @list.has_key?(province_id)
-            @list[province_id][:children][city_id] = {:text => text, :children => {}} unless @list[province_id][:children].has_key?(city_id)
-            @list[province_id][:children][city_id][:children][id] = {:text => text, :children => {}}
-          else
-            province_id = province(id)
-            city_id = city(id)
-            district_id = district(id)
-            @list[province_id] = {:text => text, :children => {}} unless @list.has_key?(province_id)
-            @list[province_id][:children][city_id] = {:text => text, :children => {}} unless @list[province_id][:children].has_key?(city_id)
-            @list[province_id][:children][city_id][:children][district_id] = {:text => text, :children => {}} unless @list[province_id][:children][city_id][:children].has_key?(district_id)
-            @list[province_id][:children][city_id][:children][district_id][:children][id] = {:text => text}
+        json['cities'].each do |item|
+          id = item['id']
+          text = item['text']
+          province_id = province(id)
+          unless @list.has_key?(province_id)
+            print 'c provice-->'
+            puts item
+            next
           end
+          @list[province_id][:children][id] = {:text => text, :children => {}}
+        end
+
+        json['districts'].each do |item|
+          id = item['id']
+          text = item['text']
+          province_id = province(id)
+          city_id = city(id)
+          unless @list.has_key?(province_id)
+            print 'd provice-->'
+            puts item
+            next
+          end
+          unless @list[province_id][:children].has_key?(city_id)
+            print 'd city-->'
+            puts item
+            next
+          end
+          @list[province_id][:children][city_id][:children][id] = {:text => text, :children => {}}
+        end
+
+        json['streets'].each do |item|
+          id = item['id']
+          text = item['text']
+          province_id = province(id)
+          city_id = city(id)
+          district_id = district(id)
+          unless @list.has_key?(province_id)
+            print 's p-->'
+            puts item
+            next
+          end
+          unless @list[province_id][:children].has_key?(city_id)
+            print 's c-->'
+            puts item
+            next
+          end
+          unless @list[province_id][:children][city_id][:children].has_key?(district_id)
+            print 's d-->'
+            puts item
+            next
+          end
+          @list[province_id][:children][city_id][:children][district_id][:children][id] = {:text => text}
         end
       end
       @list
