@@ -19,3 +19,5 @@ gem 'jquery-rails' # fixed: ActionView::Template::Error: couldn't find file 'jqu
 gem 'appraisal'
 # To use debugger
 # gem 'debugger'
+gem 'httparty'
+gem 'pry'

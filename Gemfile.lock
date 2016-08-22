@@ -156,7 +156,6 @@ DEPENDENCIES
   httparty
   jquery-rails
   launchy
-  nokogiri
   poltergeist
   pry
   rspec-rails (~> 2.14)

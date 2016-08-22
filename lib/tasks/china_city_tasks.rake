@@ -58,6 +58,42 @@ task :generate_sf_support do
 
 end
 
+task :check do
+  data = JSON.parse(File.read("db/china_city_areas_2016.08.21.json"))
+
+
+  data['cities'].group_by{|i| i['id']}.each do |g, v| 
+    if v.size > 1
+      v.each do |i|
+        p_id = d_id[0..1].ljust(6,'00')
+
+        p_text = data['provinces'].find{|t| t['id'] == p_id}['text']
+
+        p p_text + i['text']
+      end
+    end
+  end
+
+  p '--------'
+
+  data['districts'].group_by{|i| i['id']}.each do |g, v| 
+    if v.size > 1
+      v.each do |i|
+        d_id = i['id']
+        p_id = d_id[0..1].ljust(6,'00')
+        c_id = d_id[0..3].ljust(6,'00')
+
+        p_text = data['provinces'].find{|t| t['id'] == p_id}['text']
+        c_text = data['cities'].find{|t| t['id'] == c_id}['text']
+
+        p p_text + c_text + i['text']
+      end
+    end
+  end
+
+end
+
+
 task :fix_id do
 
   data = JSON.parse(File.read("db/china_city_areas_2016.08.15.json"))
@@ -98,13 +134,13 @@ task :rebuild_code do
   sf_data = CSV.read('db/sf_china_cover.csv')
 
   provinces_map = data['provinces'].inject({}) do |r, i|
-    r[i['id'].gsub('00','')] = i['text']
+    r[i['id'][0..1]] = i['text']
     r
   end
 
   cities_map = data['cities'].inject({}) do |r, i|
     province_text = provinces_map[i['id'][0..1]]
-    r[province_text.gsub(/[省|市]/, '')+" "+i['text']] = i['id'].gsub('00', '')
+    r[province_text.gsub(/[省|市]/, '')+" "+i['text']] = i['id'][0..3]
     r
   end
 
