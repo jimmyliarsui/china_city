@@ -8,11 +8,11 @@ require 'nokogiri'
 
 task :generate_postal_codes do
 
-  data = JSON.parse(File.read('db/china_city_areas_2016.08.15.json'))
+  data = JSON.parse(File.read('db/china_city_areas_2016.08.21.json'))
 
   result = (data['cities'] + data['districts']).inject({}) do |r, item|
     unless item['postcode']
-      text = item['text'].encode('gb2312', 'utf-8')
+      text = item['text'].encode('gbk', 'utf-8')
       url = "http://www.ip138.com/post/search.asp?action=area2zip&area=#{CGI::escape(text)}"
       res = HTTParty.get(url)
 
@@ -43,15 +43,14 @@ end
 
 task :generate_sf_support do
 
-  result = ChinaUnit.each(3).inject({}) do |r, street|
-    street_unit = ChinaUnit.new(street['id'])
-    f = street_unit.full_name
-    if street['support_sf'] == true
-      r[f] = true
-      p f
-    end
-    r
-  end
+  sf_data = CSV.read('db/sf_china_cover.csv')
+
+  result = sf_data.select.each_with_index{|i, index| i[6] && index != 0}
+            .inject({}) do |r, i|
+              full_text = i[3..6].join("")
+              r[full_text] = i[7] == '全境'
+              r
+            end
 
   File.open('db/sf_support.json', 'w') do |f|
     f.write JSON.pretty_generate(result)
@@ -129,9 +128,12 @@ task :rebuild_code do
 
   p "districts.size = #{districts.size}"
 
-  streets = sf_data.select.each_with_index{|i, index| i[6] && index != 0}
+  streets = sf_data.select.each_with_index{|i, index| i[6] && i[7]!='未开通' && index != 0}
             .group_by{|i| i[3].gsub(/[省|市]/, '')+" "+i[4]+" "+i[5]}
             .inject([]) do |r, (g, v)|
+              if g=="山东 临沂市 苍山县"
+                g = "山东 临沂市 苍山县（兰陵县）"
+              end
               district_code = districts_map[g]
               r += v.each_with_index.map do |i, index|
                 p i
@@ -159,4 +161,3 @@ task :rebuild_code do
   end
 
 end
-                i[3].gsub(/[省|市]/, '')+" "+i[4]
