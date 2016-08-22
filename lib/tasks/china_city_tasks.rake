@@ -197,3 +197,7 @@ task :rebuild_code do
   end
 
 end
+
+task :console do
+  binding.pry
+end
