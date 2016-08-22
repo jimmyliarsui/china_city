@@ -92,3 +92,71 @@ task :fix_id do
   end
 
 end
+
+
+task :rebuild_code do
+  data = JSON.parse(File.read('db/china_city_areas_2016.08.15.json'))
+  sf_data = CSV.read('db/sf_china_cover.csv')
+
+  provinces_map = data['provinces'].inject({}) do |r, i|
+    r[i['id'].gsub('00','')] = i['text']
+    r
+  end
+
+  cities_map = data['cities'].inject({}) do |r, i|
+    province_text = provinces_map[i['id'][0..1]]
+    r[province_text.gsub(/[省|市]/, '')+" "+i['text']] = i['id'].gsub('00', '')
+    r
+  end
+
+  districts_map = {}
+  districts = sf_data.select{|i| i[5] && !i[6]}
+              .group_by{|i| i[3].gsub(/[省|市]/, '')+" "+i[4]}
+              .inject([]) do |r, (g, v)|
+                city_code = cities_map[g]
+                r += v.each_with_index.map do |i, index|
+                  id = city_code+(index+1).to_s.rjust(2,'0')
+                  text = i[5] 
+                  full_text = g + " " + text
+                  sf_support = i[7]
+                  districts_map[full_text] = id
+                  t = {'id' => id, 'text' => text, "sf_support" => i[7]}
+                  p t
+                  t
+                end
+                r
+              end
+
+  p "districts.size = #{districts.size}"
+
+  streets = sf_data.select.each_with_index{|i, index| i[6] && index != 0}
+            .group_by{|i| i[3].gsub(/[省|市]/, '')+" "+i[4]+" "+i[5]}
+            .inject([]) do |r, (g, v)|
+              district_code = districts_map[g]
+              r += v.each_with_index.map do |i, index|
+                p i
+                id = district_code+(index+1).to_s.rjust(3,'0')
+                text = i[6]
+                sf_support = i[7]
+                t = {'id' => id, 'text' => text, "sf_support" => i[7]}
+                p t
+                t
+              end
+              r
+            end
+
+  p "streets.size = #{streets.size}"
+
+  new_data = {
+    provinces: data['provinces'],
+    cities: data['cities'],
+    districts: districts,
+    streets: streets
+  }
+
+  File.open('db/china_city_areas_2016.08.21.json', 'w') do |f|
+    f.write JSON.pretty_generate(new_data)
+  end
+
+end
+                i[3].gsub(/[省|市]/, '')+" "+i[4]
