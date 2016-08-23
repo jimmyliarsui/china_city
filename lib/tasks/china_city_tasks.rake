@@ -47,7 +47,11 @@ task :generate_sf_support do
 
   result = sf_data.select.each_with_index{|i, index| i[6] && index != 0}
             .inject({}) do |r, i|
-              full_text = i[3..6].join("")
+              if %w(北京 重庆 上海 天津).include? i[3]
+                full_text = i[3] + "市" + i[4..6].join("")
+              else
+                full_text = i[3..6].join("")
+              end
               r[full_text] = i[7] == '全境'
               r
             end
