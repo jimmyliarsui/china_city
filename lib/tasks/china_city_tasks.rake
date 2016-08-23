@@ -164,7 +164,7 @@ task :rebuild_code do
 
   p "districts.size = #{districts.size}"
 
-  streets = sf_data.select.each_with_index{|i, index| i[6] && i[7]!='未开通' && index != 0}
+  streets = sf_data.select.each_with_index{|i, index| i[6] && index != 0}
             .group_by{|i| i[3].gsub(/[省|市]/, '')+" "+i[4]+" "+i[5]}
             .inject([]) do |r, (g, v)|
               if g=="山东 临沂市 苍山县"
