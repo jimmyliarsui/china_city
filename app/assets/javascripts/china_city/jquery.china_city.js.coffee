@@ -3,15 +3,16 @@
     china_city.on 'change', parent, ->
       child_select = china_city.find(child)
       child_select.find('option').slice(1).remove()
-      child_select.change()
+      #child_select.change()
       value = $(this).find(':checked').data('value')
       if value?
-        child_select.empty();
+        child_select.empty()
         child_select.trigger('china_city:load_data_start');
         $.get "/china_city/#{value}", { postal_code: true } , (data) ->
           $('<option>', {value: option[0], text: option[0]}).data('value', option[1]).data('postal_code', option[2]).appendTo(child_select) for option in data
           # init value after data completed.
           child_select.trigger('china_city:load_data_completed');
+          child_select.change()
 
   $.fn.china_city = (options) ->
     options = $.extend
