@@ -6,6 +6,7 @@
       child_select.change()
       value = $(this).find(':checked').data('value')
       if value?
+        child_select.empty();
         child_select.trigger('china_city:load_data_start');
         $.get "/china_city/#{value}", { postal_code: true } , (data) ->
           $('<option>', {value: option[0], text: option[0]}).data('value', option[1]).data('postal_code', option[2]).appendTo(child_select) for option in data
